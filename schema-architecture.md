@@ -3,7 +3,8 @@ This Spring Boot application uses both MVC and REST controllers. Thymeleaf templ
 1. User accesses AdminDashboard or Appointment pages.
 2. The action is routed to the appropriate Thymeleaf or REST controller.
 3. The controller calls the service layer
-4. The 
-5.
-6. 
-7.
+4. The service layer communicates with the Repository Layer to perform data access operations.
+5.Each repository interfaces directly with the underlying database engine MySQL and MongoDB.
+6. Once data is retrieved from the database, it is mapped into Java model classes that the application can work with.
+7. In MVC flows, models are passed from the controller to Thymeleaf templates, where they are rendered as dynamic HTML for the browser.
+In REST flows, the same models (or transformed DTOs) are serialized into JSON and sent back to the client as part of an HTTP response.
