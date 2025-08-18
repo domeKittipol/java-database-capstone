@@ -1,6 +1,19 @@
 package com.project.back_end.repo;
 
-public interface AppointmentRepository  {
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.project.back_end.models.Appointment;
+
+import jakarta.transaction.Transactional;
+
+@Repository
+public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
    // 1. Extend JpaRepository:
 //    - The repository extends JpaRepository<Appointment, Long>, which gives it basic CRUD functionality.
@@ -8,7 +21,22 @@ public interface AppointmentRepository  {
 //    - JpaRepository also includes pagination and sorting features.
 
 // Example: public interface AppointmentRepository extends JpaRepository<Appointment, Long> {}
+@Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.doctor d LEFT JOIN FETCH a.patient p WHERE a.doctor.id = :doctorId AND a.appointmentTime BETWEEN :start AND :end")
+List<Appointment> findByDoctorIdAndAppointmentTimeBetween(Long doctorId, LocalDateTime start, LocalDateTime end);
+@Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.doctor d LEFT JOIN FETCH a.patient p WHERE a.doctor.id = :doctorId AND LOWER(p.name) LIKE LOWER(CONCAT('%', :patientName, '%')) AND a.appointmentTime BETWEEN :start AND :end")
+List<Appointment> findByDoctorIdAndPatient_NameContainingIgnoreCaseAndAppointmentTimeBetween( Long doctorId, String patientName, LocalDateTime start, LocalDateTime end);
 
+@Modifying
+@Transactional
+void deleteAllByDoctorId(Long doctorId);
+@Query("SELECT a FROM Appointment a WHERE a.patient.id = :patientId")
+List<Appointment> findByPatientId(Long patientId);
+List<Appointment> findByPatient_IdAndStatusOrderByAppointmentTimeAsc(Long patientId, int status);
+@Query("SELECT a FROM Appointment a WHERE LOWER(a.doctor.name) LIKE LOWER(CONCAT('%', :doctorName, '%')) AND a.patient.id = :patientId")
+List<Appointment> filterByDoctorNameAndPatientId(String doctorName, Long patientId);
+@Query("SELECT a FROM Appointment a WHERE LOWER(a.doctor.name) LIKE LOWER(CONCAT('%', :doctorName, '%')) AND a.patient.id = :patientId AND a.status = :status")
+List<Appointment> filterByDoctorNameAndPatientIdAndStatus(String doctorName, Long patientId, int status);
+void updateStatus(int status, long id);
 // 2. Custom Query Methods:
 
 //    - **findByDoctorIdAndAppointmentTimeBetween**:
